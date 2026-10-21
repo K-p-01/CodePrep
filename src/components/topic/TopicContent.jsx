@@ -4,20 +4,23 @@ import PracticePanel from "../practice/PracticePanel.jsx";
 import ResourceList from "./ResourceList.jsx";
 
 export default function TopicContent({ subject, topic, complete, onToggleComplete, progressApi }) {
+  const resources = topic.resources ?? [];
+  const notes = topic.notes ?? [];
+
   return (
     <div className="topic-content">
-      <section className="content-section">
+      <section id="learn" className="content-section topic-learning-section">
         <div className="section-title">
           <BookOpen size={20} />
           <div>
             <h2>Learning Resources / Lectures</h2>
-            <p>External links and lecture placeholders are topic data.</p>
+            <p>Work through the available materials, then review your notes before practice.</p>
           </div>
         </div>
-        <ResourceList resources={topic.resources} />
+        <ResourceList resources={resources} subject={subject} topic={topic} progressApi={progressApi} />
       </section>
 
-      <section className="content-section">
+      <section id="notes" className="content-section topic-learning-section">
         <div className="section-title">
           <FileText size={20} />
           <div>
@@ -25,30 +28,27 @@ export default function TopicContent({ subject, topic, complete, onToggleComplet
             <p>Compact revision points for before practice.</p>
           </div>
         </div>
-        <NotesPanel notes={topic.notes} />
+        <NotesPanel notes={notes} />
       </section>
 
-      <section className="content-section">
+      <section id="practice" className="content-section topic-learning-section">
         <div className="section-title">
           <Target size={20} />
           <div>
             <h2>Practice</h2>
-            <p>One reusable panel supports coding problems and MCQ-style checks.</p>
+            <p>Apply what you learned with the practice available for this topic.</p>
           </div>
         </div>
         <PracticePanel subject={subject} topic={topic} practice={topic.practice} progressApi={progressApi} />
       </section>
 
-      <section className="completion-panel">
+      <section id="completion" className="completion-panel topic-learning-section" aria-live="polite">
         <div>
           <span className="eyebrow">Progress</span>
           <h2>{complete ? `${topic.title} is marked complete` : `Mark ${topic.title} complete`}</h2>
-          <p>
-            Completion is saved locally for now. Later this can be replaced with backend progress data
-            without changing the topic UI.
-          </p>
+          <p>Your completion state is saved locally in this browser.</p>
         </div>
-        <button type="button" className="primary-button" onClick={onToggleComplete}>
+        <button type="button" className="primary-button" onClick={onToggleComplete} aria-pressed={complete}>
           <CheckCircle2 size={18} />
           {complete ? "Completed" : "Mark Complete"}
         </button>

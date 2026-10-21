@@ -1,0 +1,133 @@
+/** Targeted difficulty additions. Existing catalog records stay untouched. */
+export const codingProblemUpgrades = {
+  arrays: [
+    ["trapping-rain-water", "Trapping Rain Water", "Hard", "trapping-rain-water"],
+  ],
+  "sorting-search": [
+    ["search-rotated-array", "Search in Rotated Sorted Array", "Medium", "search-in-rotated-sorted-array"],
+    ["median-two-sorted-arrays", "Median of Two Sorted Arrays", "Hard", "median-of-two-sorted-arrays"],
+  ],
+  strings: [
+    ["longest-palindromic-substring", "Longest Palindromic Substring", "Medium", "longest-palindromic-substring"],
+    ["minimum-window-substring", "Minimum Window Substring", "Hard", "minimum-window-substring"],
+  ],
+  "linked-list": [
+    ["add-two-numbers", "Add Two Numbers", "Medium", "add-two-numbers"],
+    ["remove-nth-node-from-end", "Remove Nth Node From End of List", "Medium", "remove-nth-node-from-end-of-list"],
+    ["merge-k-sorted-lists", "Merge k Sorted Lists", "Hard", "merge-k-sorted-lists"],
+  ],
+  "stack-queue": [
+    ["daily-temperatures", "Daily Temperatures", "Medium", "daily-temperatures"],
+    ["largest-rectangle-histogram", "Largest Rectangle in Histogram", "Hard", "largest-rectangle-in-histogram"],
+  ],
+  recursion: [
+    ["fibonacci-number", "Fibonacci Number", "Easy", "fibonacci-number"],
+    ["power-of-two", "Power of Two", "Easy", "power-of-two"],
+    ["n-queens", "N-Queens", "Hard", "n-queens"],
+  ],
+  trees: [
+    ["binary-tree-right-side-view", "Binary Tree Right Side View", "Medium", "binary-tree-right-side-view"],
+    ["binary-tree-maximum-path-sum", "Binary Tree Maximum Path Sum", "Hard", "binary-tree-maximum-path-sum"],
+  ],
+  bst: [
+    ["bst-range-sum", "Range Sum of BST", "Easy", "range-sum-of-bst"],
+    ["maximum-sum-bst", "Maximum Sum BST in Binary Tree", "Hard", "maximum-sum-bst-in-binary-tree"],
+  ],
+  heap: [
+    ["kth-largest-stream", "Kth Largest Element in a Stream", "Easy", "kth-largest-element-in-a-stream"],
+    ["median-data-stream", "Find Median from Data Stream", "Hard", "find-median-from-data-stream"],
+  ],
+  hashing: [
+    ["ransom-note", "Ransom Note", "Easy", "ransom-note"],
+    ["substring-word-concat", "Substring with Concatenation of All Words", "Hard", "substring-with-concatenation-of-all-words"],
+  ],
+  graphs: [
+    ["find-center-star-graph", "Find Center of Star Graph", "Easy", "find-center-of-star-graph"],
+    ["find-path-graph", "Find if Path Exists in Graph", "Easy", "find-if-path-exists-in-graph"],
+    ["critical-connections", "Critical Connections in a Network", "Hard", "critical-connections-in-a-network"],
+  ],
+  "dynamic-programming": [
+    ["min-cost-climbing-stairs", "Min Cost Climbing Stairs", "Easy", "min-cost-climbing-stairs"],
+    ["burst-balloons", "Burst Balloons", "Hard", "burst-balloons"],
+  ],
+};
+
+const hardQuestion = (id, topic, prompt, options, correctAnswer, explanation) => ({
+  id,
+  topic,
+  difficulty: "Hard",
+  prompt,
+  options,
+  correctAnswer,
+  explanation,
+});
+
+/** One challenging, schema-compatible question for each MCQ topic missing Hard coverage. */
+export const hardQuestionUpgrades = {
+  "dsa:complexity-analysis": [hardQuestion(
+    "complexity-master-theorem-nlogn",
+    "Complexity Analysis",
+    "For T(n) = 2T(n/2) + n log n with T(1) = Θ(1), what is the asymptotic running time?",
+    ["Θ(n)", "Θ(n log n)", "Θ(n log² n)", "Θ(n²)"],
+    "Θ(n log² n)",
+    "At each of log n levels, the non-recursive work sums to Θ(n log(n / 2^i)); summing those level costs gives Θ(n log² n).",
+  )],
+  "dsa:arrays": [hardQuestion(
+    "arrays-subarray-sum-negative-values",
+    "Arrays",
+    "An array can contain negative numbers. You must count contiguous subarrays summing to k in O(n) expected time. Which approach supports this?",
+    ["Sliding window with a moving left edge", "Prefix-sum frequencies in a hash map", "Sort the array, then use two pointers", "Binary search each subarray sum"],
+    "Prefix-sum frequencies in a hash map",
+    "Negative values break the monotonicity required by a standard sliding window. For current prefix sum p, each prior prefix p - k identifies a valid subarray ending here; a frequency map counts them in expected O(1) per element.",
+  )],
+  "dbms:database-fundamentals": [hardQuestion("database-fundamentals-hard-isolation", "Database Fundamentals", "Transaction T1 reads balance 100. T2 changes it to 80 and commits. T1 reads 80 on its second read. Which anomaly occurred?", ["Dirty read", "Non-repeatable read", "Phantom read", "Lost update"], "Non-repeatable read", "T1 read the same row twice and saw a different committed value. A dirty read would involve uncommitted data; a phantom concerns a changed set of rows matching a predicate." )],
+  "dbms:er-model": [hardQuestion("er-model-hard-weak-entity-key", "ER Model", "An employee may have multiple dependents. A dependent's name is unique only within one employee. What relational key best identifies a dependent?", ["Dependent name alone", "Employee key and dependent name together", "A relationship label alone", "A nullable employee key"], "Employee key and dependent name together", "The dependent is weak because its partial key is not globally unique. Combine the owner's key with that partial key to identify each dependent." )],
+  "dbms:relational-model-sql": [hardQuestion("sql-hard-not-in-null", "Relational Model and SQL", "A subquery used by `x NOT IN (SELECT y ...)` returns at least one NULL and no value equal to x. What does the predicate evaluate to under SQL three-valued logic?", ["TRUE", "FALSE", "UNKNOWN", "It raises an error"], "UNKNOWN", "When the set contains NULL and no equal value is found, the comparison cannot be determined. WHERE retains only TRUE, so the row is filtered out; NOT EXISTS is often safer for nullable data." )],
+  "dbms:transactions-concurrency": [hardQuestion("transactions-hard-precedence-cycle", "Transactions and Concurrency", "A schedule contains conflicting operations producing edges T1→T2, T2→T3, and T3→T1 in its precedence graph. What follows?", ["It is conflict-serializable", "It is not conflict-serializable", "It is recoverable but not serializable by definition", "It is equivalent to T1, T2, T3 in that order"], "It is not conflict-serializable", "A schedule is conflict-serializable exactly when its precedence graph is acyclic. This graph contains a cycle, so no serial order preserves all conflict orderings." )],
+  "dbms:indexing": [hardQuestion("indexing-hard-composite-prefix", "Indexing", "A composite B-tree index is ordered on (department, salary, employee_id). Which predicate can use its leading key to seek a narrow range?", ["salary = 90000", "employee_id = 42", "department = 'Sales' AND salary >= 90000", "salary >= 90000 AND employee_id = 42"], "department = 'Sales' AND salary >= 90000", "The leftmost-prefix rule lets the index seek on department and then scan a salary range within that department. Predicates omitting the leading column generally cannot use the same narrow seek." )],
+  "os:os-fundamentals": [hardQuestion("os-hard-user-kernel-boundary", "OS Fundamentals", "A user process attempts to write directly to a protected device register. What mechanism normally prevents an unchecked write?", ["The process's source language", "Hardware privilege modes with kernel-mediated system calls", "The file extension", "The scheduler's time quantum"], "Hardware privilege modes with kernel-mediated system calls", "The CPU enforces privileged instructions and protected memory. User code requests device access through a system call handled by the kernel." )],
+  "os:processes-threads": [hardQuestion("process-thread-hard-shared-memory", "Processes and Threads", "Two threads in one process update the same heap object without synchronization. What is the central correctness risk?", ["They necessarily use separate address spaces", "A data race can produce a result dependent on interleaving", "The process control block duplicates the heap", "The operating system serializes every heap access"], "A data race can produce a result dependent on interleaving", "Threads share a process heap. Without a synchronization discipline, conflicting accesses can interleave unpredictably and violate the program's invariants." )],
+  "os:cpu-scheduling": [hardQuestion("os-scheduling-hard-srtf", "CPU Scheduling", "Under preemptive shortest-remaining-time-first scheduling, a running job has 8 ms left. A new 3 ms job arrives. Which job runs next?", ["The original job, because it started first", "The new 3 ms job", "The job with the lowest process ID", "Both jobs concurrently"], "The new 3 ms job", "Shortest-remaining-time-first selects the ready job with the least remaining CPU time and preempts the 8 ms job for the new 3 ms job." )],
+  "os:synchronization": [hardQuestion("os-sync-hard-condition-variable", "Synchronization", "A thread checks a condition while holding a mutex, finds it false, and must wait without missing a signal. What must condition-variable wait do atomically?", ["Release the mutex and enter the wait state", "Destroy the mutex", "Broadcast before sleeping", "Keep the mutex locked while blocked"], "Release the mutex and enter the wait state", "Atomic release-and-wait prevents a signal from slipping between the condition check and blocking. The waiter reacquires the mutex before returning and should recheck the condition in a loop." )],
+  "os:deadlocks": [hardQuestion("os-deadlock-hard-prevention", "Deadlocks", "A system assigns a global order to resource types and requires processes to acquire locks only in increasing order. Which deadlock condition does this directly prevent?", ["Mutual exclusion", "Hold and wait", "No preemption", "Circular wait"], "Circular wait", "A strict resource ordering makes a cycle of processes waiting for resources impossible, breaking the circular-wait condition required for deadlock." )],
+  "os:memory-management": [hardQuestion("os-memory-hard-lru-belady", "Memory Management", "Why can FIFO page replacement show Belady's anomaly while true stack algorithms such as LRU do not?", ["FIFO uses no page table", "Increasing frames can change FIFO's eviction order, while LRU's resident sets are nested", "LRU always has zero page faults", "FIFO only works for contiguous allocation"], "Increasing frames can change FIFO's eviction order, while LRU's resident sets are nested", "FIFO is not a stack algorithm, so extra frames can alter its queue and increase faults. LRU has the stack property: pages resident with fewer frames remain resident with more frames." )],
+  "os:file-systems": [hardQuestion("os-filesystems-hard-inode-link", "File Systems", "Two directory entries are created as hard links to the same inode. What happens when one entry is removed?", ["The file data is immediately deleted", "The other entry still names the inode; reclamation waits for the last link and open reference", "The other entry changes to a symbolic link", "The inode is copied"], "The other entry still names the inode; reclamation waits for the last link and open reference", "A hard link is another directory name for the same inode. Removing one name decrements the link count; storage is reclaimed only when no links or open references remain." )],
+  "cn:network-fundamentals": [hardQuestion("cn-fundamentals-hard-throughput", "Network Fundamentals", "A path has links of 100 Mbps, 20 Mbps, and 1 Gbps. Ignoring overhead and congestion, what limits end-to-end throughput?", ["The 1 Gbps link", "The 100 Mbps link", "The 20 Mbps bottleneck link", "The sum of all link rates"], "The 20 Mbps bottleneck link", "For a single flow across serial links, the narrowest-capacity link limits the steady-state end-to-end throughput." )],
+  "cn:osi-tcpip-models": [hardQuestion("cn-osi-hard-router-layer", "OSI and TCP/IP Models", "A router forwards an IP packet between subnets and replaces the link-layer frame for the next hop. Which statement is most accurate?", ["It forwards at the network layer while link framing changes per hop", "It forwards at the application layer", "The IP source and destination must change at every router", "Ethernet addresses remain end-to-end unchanged"], "It forwards at the network layer while link framing changes per hop", "Routers make forwarding decisions using network-layer addresses. The link-layer frame is local to each hop and is rebuilt for the next link." )],
+  "cn:data-link-layer": [hardQuestion("cn-link-hard-switch-learning", "Data Link Layer", "A learning Ethernet switch receives a frame from source MAC A on port 3. What does it learn before forwarding?", ["Destination IP A is on port 3", "Source MAC A is reachable through port 3", "Every MAC is reachable through port 3", "The default gateway is port 3"], "Source MAC A is reachable through port 3", "A learning switch records the source MAC and ingress port in its forwarding table, then looks up the destination MAC to decide where to send the frame." )],
+  "cn:ip-addressing-routing": [hardQuestion("cn-routing-hard-subnet", "IP Addressing and Routing", "A host has address 192.168.10.70/26. Which network prefix contains it?", ["192.168.10.0/26", "192.168.10.64/26", "192.168.10.70/26", "192.168.10.128/26"], "192.168.10.64/26", "A /26 subnet has blocks of 64 addresses in the final octet. Address 70 falls in the 64–127 block, whose network address is 192.168.10.64." )],
+  "cn:tcp-udp": [hardQuestion("cn-transport-hard-tcp-window", "TCP and UDP", "A TCP sender has a congestion window of 12 segments and the receiver advertises a 5-segment window. Ignoring other limits, how much data may be outstanding?", ["12 segments", "17 segments", "5 segments", "Exactly 1 segment"], "5 segments", "The sender is bounded by the smaller of the congestion window and receiver's advertised window: min(12, 5) = 5 segments." )],
+  "cn:application-protocols": [hardQuestion("cn-app-hard-dns-cname", "Application Layer Protocols", "A DNS name has a CNAME record pointing to another hostname. Which lookup behavior is expected?", ["The resolver follows the alias to resolve the canonical name", "The CNAME directly contains the server's MAC address", "The client must use ARP across the Internet", "The alias disables caching"], "The resolver follows the alias to resolve the canonical name", "A CNAME maps one DNS name to another name, not directly to an IP address. Resolution continues for the canonical target, with caching governed by record TTLs." )],
+  "cn:network-security": [hardQuestion("cn-security-hard-certificate", "Network Security", "During TLS validation, the server presents a certificate for api.example.com signed by a trusted CA, but the client connects to evil.example.com. What should the client conclude?", ["The certificate is valid because the CA is trusted", "The hostname mismatch makes the certificate invalid for this connection", "TLS encryption alone proves the server identity", "The client should ignore the SAN field"], "The hostname mismatch makes the certificate invalid for this connection", "Trust-chain validation is not enough: the certificate's subject alternative names must match the hostname being accessed. Otherwise server identity is not authenticated." )],
+  "oop:classes-objects": [hardQuestion("oop-class-hard-aliasing", "Classes and Objects", "Two variables refer to the same mutable object. One variable changes a field. What should the other reference observe?", ["The old field value because variables copy objects", "The new field value because both references designate the same object", "A compile error in every object-oriented language", "A new independent object"], "The new field value because both references designate the same object", "Assignment of an object reference usually copies the reference, not the object. Both variables therefore observe mutations to that shared instance." )],
+  "oop:constructors": [hardQuestion("oop-constructors-hard-chain", "Constructors", "In Java, a subclass constructor must invoke a superclass constructor that requires arguments. Where must that invocation occur?", ["As the first constructor statement via super(arguments)", "After any field access", "In a static initializer", "Only after the object is fully constructed"], "As the first constructor statement via super(arguments)", "Java requires an explicit superclass-constructor invocation to be the first statement in the constructor; otherwise an implicit no-argument super() call is attempted." )],
+  "oop:encapsulation": [hardQuestion("oop-encapsulation-hard-invariant", "Encapsulation", "A class stores a non-negative account balance. Which design best protects that invariant?", ["Make the balance public and document the rule", "Keep state private and expose operations that validate changes", "Return a mutable reference to the internal state", "Allow every caller to update the field directly"], "Keep state private and expose operations that validate changes", "Encapsulation centralizes state changes behind methods that can enforce the invariant, preventing callers from creating invalid states directly." )],
+  "oop:inheritance": [hardQuestion("oop-inheritance-hard-liskov", "Inheritance", "A subtype overrides a method but rejects inputs accepted by the base type and strengthens its required preconditions. Which design principle is threatened?", ["Liskov substitution principle", "Single responsibility principle", "Interface segregation principle", "Open-closed principle"], "Liskov substitution principle", "A subtype should be usable wherever its base type is expected. Strengthening preconditions can make valid base-type calls fail for the subtype." )],
+  "oop:polymorphism": [hardQuestion("oop-polymorphism-hard-dispatch", "Polymorphism", "A base reference points to a subclass object. The subclass overrides an instance method. Which implementation normally runs when the method is called?", ["The implementation selected by the object's runtime class", "Always the base implementation", "The implementation selected by the variable name", "Both implementations in parallel"], "The implementation selected by the object's runtime class", "Overridden instance methods use dynamic dispatch: the runtime object's class determines the implementation, while overload selection is generally based on compile-time types." )],
+  "oop:abstraction-interfaces": [hardQuestion("oop-interface-hard-default-conflict", "Abstraction and Interfaces", "A Java class implements two interfaces that provide the same unrelated default method signature. What must the class generally do?", ["Override the method to resolve the conflict", "Use whichever interface is listed first", "Become abstract automatically", "The JVM chooses at runtime"], "Override the method to resolve the conflict", "The class must provide an overriding implementation or explicitly delegate to a chosen interface default using InterfaceName.super.method()." )],
+  "oop:solid-principles": [hardQuestion("oop-solid-hard-ocp", "SOLID Principles", "A payment service requires editing a central switch every time a new payment provider is added. Which SOLID principle is most directly weakened?", ["Open-closed principle", "Liskov substitution principle", "Single responsibility principle", "Dependency inversion principle"], "Open-closed principle", "The open-closed principle favors extending behavior through abstractions or new implementations without repeatedly modifying stable central logic." )],
+  "aptitude:percentages": [hardQuestion("apt-percent-hard-successive", "Percentages", "A price is increased by 20%, then discounted by 20%. Relative to the original price, what is the final change?", ["No change", "4% decrease", "4% increase", "20% decrease"], "4% decrease", "Starting from 100, the price becomes 120 and then 96. The net change is a decrease of 4 from 100, or 4%." )],
+  "aptitude:ratio-proportion": [hardQuestion("apt-ratio-hard-mixture", "Ratio and Proportion", "A 30 L mixture has milk and water in the ratio 4:1. How much water must be added to make the ratio 2:1?", ["3 L", "5 L", "6 L", "10 L"], "6 L", "There are 24 L milk and 6 L water. For a 2:1 ratio, 24 L milk requires 12 L water, so add 12 − 6 = 6 L." )],
+  "aptitude:profit-loss": [hardQuestion("apt-profit-hard-markup-discount", "Profit and Loss", "An item costs ₹800. It is marked up by 25%, then sold at a 10% discount on marked price. What is the profit percentage?", ["10%", "12.5%", "15%", "20%"], "12.5%", "Marked price is ₹1,000; after a 10% discount the selling price is ₹900. Profit is ₹100 on ₹800 cost, or 12.5%." )],
+  "aptitude:time-work": [hardQuestion("apt-work-hard-combined", "Time and Work", "A can finish a job in 12 days and B in 18 days. They work together for 4 days, then A leaves. How many more days does B need?", ["6 days", "8 days", "10 days", "12 days"], "8 days", "Their combined daily rate is 1/12 + 1/18 = 5/36. In 4 days they complete 5/9, leaving 4/9. B works at 1/18 per day, so needs (4/9)×18 = 8 days." )],
+  "aptitude:probability": [hardQuestion("apt-prob-hard-two-aces", "Probability", "Two cards are drawn without replacement from a standard 52-card deck. What is the probability both are aces?", ["1/221", "1/169", "1/26", "1/52"], "1/221", "The probability is (4/52)×(3/51) = 12/2652 = 1/221." )],
+  "aptitude:logical-reasoning": [hardQuestion("apt-logic-hard-order", "Logical Reasoning", "Five people P, Q, R, S, T sit in a row. P is left of Q; R is right of Q; S is left of P; T is right of R. Which person must be in the middle?", ["P", "Q", "R", "S"], "Q", "The constraints establish S < P < Q < R < T, so Q is the third person, the middle seat." )],
+  "aptitude:verbal-ability": [hardQuestion("apt-verbal-hard-inference", "Verbal Ability", "A report says: 'The pilot increased output, but the trial was too short to establish whether quality was affected.' Which conclusion is best supported?", ["Quality definitely declined", "Output increased during the pilot; the quality effect remains unknown", "The pilot proved the process is superior", "Output and quality both remained unchanged"], "Output increased during the pilot; the quality effect remains unknown", "The sentence directly reports increased output and explicitly says the trial was insufficient to determine the effect on quality." )],
+  "interview-prep:resume-project-discussion": [hardQuestion("interview-resume-hard-project-claim", "Resume and Project Discussion", "An interviewer asks how you know your project improved performance. Which answer is strongest?", ["It felt faster to me", "I measured the same workload before and after, describe the method, and state the observed limits", "I claim a 10× gain without a baseline", "I attribute the result entirely to a teammate"], "I measured the same workload before and after, describe the method, and state the observed limits", "A credible project claim names a reproducible comparison and qualifies the evidence rather than relying on impressions or unsupported numbers." )],
+  "interview-prep:self-introduction": [hardQuestion("interview-intro-hard-tailoring", "Self Introduction", "You have 60 seconds to introduce yourself for a backend internship. Which structure is most effective?", ["List every course taken", "Connect current study, one relevant project with your contribution, and why this role fits", "Recite a generic biography unrelated to the role", "Begin with salary expectations"], "Connect current study, one relevant project with your contribution, and why this role fits", "A concise introduction should select relevant evidence, clarify personal contribution, and connect it to the opportunity." )],
+  "interview-prep:dsa-interview-patterns": [hardQuestion("interview-dsa-hard-clarify", "DSA Interview Patterns", "A prompt asks for a shortest path but does not say whether edges have weights. What is the best first step?", ["Assume Dijkstra and begin coding", "Clarify constraints and edge weights before choosing BFS or a weighted-graph algorithm", "Sort the adjacency list", "Use DFS because it is always shortest"], "Clarify constraints and edge weights before choosing BFS or a weighted-graph algorithm", "BFS gives shortest paths by edge count in unweighted graphs; weighted graphs require a suitable algorithm and assumptions about edge weights." )],
+  "interview-prep:cs-fundamentals": [hardQuestion("interview-cs-hard-index-tradeoff", "CS Fundamentals", "A read-heavy table gains a secondary index on a frequently updated column. Which tradeoff should be expected?", ["Reads may improve, while writes and storage cost increase", "Reads and writes always improve with no cost", "The index guarantees serializable transactions", "The index removes the need for a primary key"], "Reads may improve, while writes and storage cost increase", "Indexes can speed qualifying reads but need storage and maintenance on writes; they do not by themselves change transaction isolation or key constraints." )],
+  "interview-prep:behavioral-questions": [hardQuestion("interview-behavior-hard-conflict", "Behavioral Questions", "When describing a disagreement with a teammate, which approach best demonstrates ownership and judgment?", ["Describe the disagreement, how you listened and evaluated evidence, your action, and the outcome", "Say the teammate was incompetent and omit your role", "Claim there was no disagreement", "Describe only the final result without context"], "Describe the disagreement, how you listened and evaluated evidence, your action, and the outcome", "A strong behavioral answer gives context, shows the candidate's specific actions and reasoning, and explains the outcome or learning without assigning blame." )],
+  "interview-prep:mock-interview-preparation": [hardQuestion("interview-mock-hard-feedback", "Mock Interview Preparation", "A mock interviewer says your solution is correct but your explanation is hard to follow. What is the most useful next practice step?", ["Repeat the same problem silently", "Re-solve a similar problem aloud using a plan, invariants, edge cases, and a concise complexity summary", "Memorize a longer introduction", "Ignore the feedback because the answer was correct"], "Re-solve a similar problem aloud using a plan, invariants, edge cases, and a concise complexity summary", "Targeted practice should address the observed communication gap while still covering correctness, validation, and complexity." )],
+};
+
+export function makeUpgradeProblems(topicId, topicTitle) {
+  return (codingProblemUpgrades[topicId] ?? []).map(([id, title, difficulty, slug]) => ({
+    id,
+    title,
+    topic: topicTitle,
+    platform: "LeetCode",
+    difficulty,
+    url: `https://leetcode.com/problems/${slug}/`,
+  }));
+}

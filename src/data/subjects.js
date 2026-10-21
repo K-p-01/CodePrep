@@ -1,3 +1,18 @@
+import { applyStarterContent } from "./starterContent.js";
+
+function outlineTopic(id, title, order, summary, level = "Foundation", practiceType = "mcq") {
+  return {
+    id,
+    title,
+    order,
+    level,
+    summary,
+    resources: [],
+    notes: [],
+    practice: { type: practiceType, problems: [], questions: [] },
+  };
+}
+
 export const subjects = [
   {
     id: "dsa",
@@ -5,15 +20,71 @@ export const subjects = [
     fullName: "Data Structures and Algorithms",
     description: "A roadmap-first path for coding interviews and placement tests.",
     accent: "#2563eb",
-    stats: {
-      topics: 11,
-      estimatedHours: 62,
-    },
+    modules: [
+      { id: "foundations", title: "Programming Foundations", description: "Build a habit of reasoning about runtime, memory, and input constraints." },
+      { id: "arrays-foundations", title: "Sorting & Arrays", description: "Learn array fundamentals, sorting, binary search, and common array techniques." },
+      { id: "strings-hashing", title: "Strings & Hashing", description: "Work with character sequences, frequency maps, and lookup patterns." },
+      { id: "linear-structures", title: "Linked Data Structures", description: "Practice pointer-based lists, stacks, and queues." },
+      { id: "recursion", title: "Recursion & Backtracking", description: "Break problems into smaller calls and explore choices systematically." },
+      { id: "trees", title: "Trees, BSTs & Heaps", description: "Learn hierarchical traversal, ordered search, and priority queues." },
+      { id: "graphs", title: "Graphs", description: "Model relationships and solve traversal and connectivity problems." },
+      { id: "dynamic-programming", title: "Dynamic Programming", description: "Define states and reuse solutions to overlapping subproblems." },
+    ],
     topics: [
       {
-        id: "arrays",
-        title: "Arrays",
+        id: "complexity-analysis",
+        moduleId: "foundations",
+        title: "Complexity Analysis",
         order: 1,
+        level: "Foundation",
+        duration: "2 hours",
+        summary: "Estimate how time and auxiliary space grow with input size before choosing an algorithm.",
+        resources: [{ id: "mit-6006-intro", type: "Open course", title: "Introduction to Algorithms (6.006)", source: "MIT OpenCourseWare", url: "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/" }],
+        notes: [
+          "Describe growth as input size n changes; ignore constant factors and lower-order terms when comparing asymptotic bounds.",
+          "A loop over n items is usually O(n); two nested n-sized loops are usually O(n²), unless their bounds reduce the total work.",
+          "Auxiliary space counts extra memory used by the algorithm; recursive calls also consume stack space.",
+          "Use constraints to estimate whether an approach is feasible, then verify the estimate against the actual operations.",
+        ],
+        practice: {
+          type: "mcq",
+          problems: [],
+          questions: [
+            {
+              id: "complexity-nested-loops",
+              topic: "Complexity Analysis",
+              difficulty: "Easy",
+              prompt: "What is the time complexity of two nested loops that each run n times?",
+              options: ["O(n)", "O(n log n)", "O(n²)", "O(2n)"],
+              correctAnswer: "O(n²)",
+              explanation: "The inner loop runs n times for each of the n outer-loop iterations, giving n × n operations. Constants such as 2n are simplified to O(n), but n² remains quadratic.",
+            },
+            {
+              id: "complexity-halving-loop",
+              topic: "Complexity Analysis",
+              difficulty: "Easy",
+              prompt: "A loop starts with i = n and halves i on each iteration until it reaches 1. What is its time complexity?",
+              options: ["O(1)", "O(log n)", "O(n)", "O(n log n)"],
+              correctAnswer: "O(log n)",
+              explanation: "After k iterations, i is approximately n / 2ᵏ. It takes about log₂(n) halvings to reach 1, so the loop runs in logarithmic time.",
+            },
+            {
+              id: "complexity-recursive-space",
+              topic: "Complexity Analysis",
+              difficulty: "Medium",
+              prompt: "A recursive function makes one call for n, then n − 1, continuing down to 1. What auxiliary space does the call stack use?",
+              options: ["O(1)", "O(log n)", "O(n)", "O(n²)"],
+              correctAnswer: "O(n)",
+              explanation: "The calls remain on the stack until the base case is reached. There are n simultaneously active frames, so the auxiliary stack space is O(n).",
+            },
+          ],
+        },
+      },
+      {
+        id: "arrays",
+        moduleId: "arrays-foundations",
+        title: "Arrays",
+        order: 2,
         level: "Foundation",
         duration: "5 hours",
         summary: "Learn traversal, subarrays, two pointers, prefix sums, and common array patterns.",
@@ -22,7 +93,7 @@ export const subjects = [
             id: "arrays-intro",
             type: "Lecture",
             title: "Array Basics and Traversal",
-            source: "CodePrep Starter",
+            source: "GeeksforGeeks",
             url: "https://www.geeksforgeeks.org/array-data-structure-guide/",
             minutes: 35,
           },
@@ -108,9 +179,22 @@ export const subjects = [
         },
       },
       {
+        id: "sorting-search",
+        moduleId: "arrays-foundations",
+        title: "Sorting & Binary Search",
+        order: 3,
+        level: "Foundation",
+        duration: "4 hours",
+        summary: "Use ordering to simplify problems and apply binary search to monotonic answer spaces.",
+        resources: [],
+        notes: [],
+        practice: { type: "coding", problems: [], questions: [] },
+      },
+      {
         id: "strings",
+        moduleId: "strings-hashing",
         title: "Strings",
-        order: 2,
+        order: 4,
         level: "Foundation",
         duration: "4 hours",
         summary: "Patterns for character frequency, parsing, substring windows, and matching.",
@@ -120,8 +204,9 @@ export const subjects = [
       },
       {
         id: "linked-list",
+        moduleId: "linear-structures",
         title: "Linked List",
-        order: 3,
+        order: 5,
         level: "Foundation",
         duration: "5 hours",
         summary: "Pointer movement, reversal, cycle detection, and merge-style problems.",
@@ -131,8 +216,9 @@ export const subjects = [
       },
       {
         id: "stack-queue",
+        moduleId: "linear-structures",
         title: "Stack & Queue",
-        order: 4,
+        order: 6,
         level: "Foundation",
         duration: "4 hours",
         summary: "LIFO/FIFO patterns, monotonic stacks, and queue-based simulations.",
@@ -142,8 +228,9 @@ export const subjects = [
       },
       {
         id: "recursion",
+        moduleId: "recursion",
         title: "Recursion",
-        order: 5,
+        order: 7,
         level: "Foundation",
         duration: "6 hours",
         summary: "Base cases, recursive trees, backtracking setup, and divide-and-conquer.",
@@ -153,8 +240,9 @@ export const subjects = [
       },
       {
         id: "trees",
+        moduleId: "trees",
         title: "Trees",
-        order: 6,
+        order: 8,
         level: "Intermediate",
         duration: "7 hours",
         summary: "Traversals, height/depth, path problems, and tree construction.",
@@ -164,8 +252,9 @@ export const subjects = [
       },
       {
         id: "bst",
+        moduleId: "trees",
         title: "BST",
-        order: 7,
+        order: 9,
         level: "Intermediate",
         duration: "4 hours",
         summary: "Search-tree ordering, validation, insertion, deletion, and range queries.",
@@ -175,8 +264,9 @@ export const subjects = [
       },
       {
         id: "heap",
+        moduleId: "trees",
         title: "Heap",
-        order: 8,
+        order: 10,
         level: "Intermediate",
         duration: "4 hours",
         summary: "Priority queues, top-k patterns, scheduling, and stream problems.",
@@ -186,8 +276,9 @@ export const subjects = [
       },
       {
         id: "hashing",
+        moduleId: "strings-hashing",
         title: "Hashing",
-        order: 9,
+        order: 11,
         level: "Intermediate",
         duration: "4 hours",
         summary: "Frequency maps, sets, pair lookups, and collision-aware reasoning.",
@@ -197,8 +288,9 @@ export const subjects = [
       },
       {
         id: "graphs",
+        moduleId: "graphs",
         title: "Graphs",
-        order: 10,
+        order: 12,
         level: "Advanced",
         duration: "8 hours",
         summary: "BFS, DFS, shortest paths, connectivity, topological order, and cycles.",
@@ -208,8 +300,9 @@ export const subjects = [
       },
       {
         id: "dynamic-programming",
+        moduleId: "dynamic-programming",
         title: "Dynamic Programming",
-        order: 11,
+        order: 13,
         level: "Advanced",
         duration: "11 hours",
         summary: "State definition, transitions, memoization, tabulation, and optimization.",
@@ -225,12 +318,20 @@ export const subjects = [
     fullName: "Database Management Systems",
     description: "SQL, normalization, transactions, indexing, and database internals.",
     accent: "#0f766e",
-    stats: { topics: 1, estimatedHours: 4 },
     topics: [
+      {
+        ...outlineTopic("database-fundamentals", "Database Fundamentals", 1, "Core database concepts, database systems, and the roles they serve."),
+      },
+      {
+        ...outlineTopic("er-model", "ER Model", 2, "Entity relationship modeling and the concepts used to describe data."),
+      },
+      {
+        ...outlineTopic("relational-model-sql", "Relational Model and SQL", 3, "Relational data concepts and the SQL language."),
+      },
       {
         id: "normalization",
         title: "Normalization",
-        order: 1,
+        order: 4,
         level: "Foundation",
         duration: "4 hours",
         summary: "Understand normal forms, redundancy, dependencies, and cleaner schema design.",
@@ -332,6 +433,12 @@ export const subjects = [
           ],
         },
       },
+      {
+        ...outlineTopic("transactions-concurrency", "Transactions and Concurrency", 5, "Transaction properties and coordinating concurrent database operations.", "Intermediate"),
+      },
+      {
+        ...outlineTopic("indexing", "Indexing", 6, "Database indexes and how they support data access.", "Intermediate"),
+      },
     ],
   },
   {
@@ -340,8 +447,15 @@ export const subjects = [
     fullName: "Operating Systems",
     description: "Processes, memory, scheduling, synchronization, and file systems.",
     accent: "#9333ea",
-    stats: { topics: 0, estimatedHours: 0 },
-    topics: [],
+    topics: [
+      outlineTopic("os-fundamentals", "Operating System Fundamentals", 1, "The purpose and core responsibilities of an operating system."),
+      outlineTopic("processes-threads", "Processes and Threads", 2, "Process and thread concepts, lifecycle, and execution."),
+      outlineTopic("cpu-scheduling", "CPU Scheduling", 3, "Scheduling goals, algorithms, and process selection.", "Intermediate"),
+      outlineTopic("synchronization", "Synchronization", 4, "Coordination and synchronization between concurrent tasks.", "Intermediate"),
+      outlineTopic("deadlocks", "Deadlocks", 5, "Deadlock conditions, prevention, avoidance, and handling.", "Intermediate"),
+      outlineTopic("memory-management", "Memory Management", 6, "Memory allocation, address translation, and virtual memory.", "Intermediate"),
+      outlineTopic("file-systems", "File Systems", 7, "File organization, access, and file system responsibilities."),
+    ],
   },
   {
     id: "cn",
@@ -349,8 +463,15 @@ export const subjects = [
     fullName: "Computer Networks",
     description: "Networking fundamentals, protocols, layers, routing, and web basics.",
     accent: "#ea580c",
-    stats: { topics: 0, estimatedHours: 0 },
-    topics: [],
+    topics: [
+      outlineTopic("network-fundamentals", "Network Fundamentals", 1, "Network concepts, devices, and communication basics."),
+      outlineTopic("osi-tcpip-models", "OSI/TCP-IP Models", 2, "Layered network models and how their layers relate."),
+      outlineTopic("data-link-layer", "Data Link Layer", 3, "Link-layer framing, addressing, and delivery."),
+      outlineTopic("ip-addressing-routing", "IP Addressing and Routing", 4, "IP addressing, subnet concepts, and routing between networks.", "Intermediate"),
+      outlineTopic("tcp-udp", "TCP and UDP", 5, "Transport layer behavior and the differences between TCP and UDP."),
+      outlineTopic("application-protocols", "Application Layer Protocols", 6, "Common protocols used by networked applications."),
+      outlineTopic("network-security", "Network Security", 7, "Foundational network security concepts and common protections.", "Intermediate"),
+    ],
   },
   {
     id: "oop",
@@ -358,8 +479,15 @@ export const subjects = [
     fullName: "Object-Oriented Programming",
     description: "Classes, objects, inheritance, polymorphism, abstraction, and design basics.",
     accent: "#be123c",
-    stats: { topics: 0, estimatedHours: 0 },
-    topics: [],
+    topics: [
+      outlineTopic("classes-objects", "Classes and Objects", 1, "Classes as blueprints and objects as their instances."),
+      outlineTopic("constructors", "Constructors", 2, "Object initialization and constructor behavior."),
+      outlineTopic("encapsulation", "Encapsulation", 3, "Bundling state and behavior while controlling access."),
+      outlineTopic("inheritance", "Inheritance", 4, "Reusing and extending behavior through class relationships."),
+      outlineTopic("polymorphism", "Polymorphism", 5, "Using a common interface with behavior that varies by type.", "Intermediate"),
+      outlineTopic("abstraction-interfaces", "Abstraction and Interfaces", 6, "Defining essential behavior while hiding implementation details.", "Intermediate"),
+      outlineTopic("solid-principles", "SOLID Principles", 7, "Principles for organizing maintainable object-oriented designs.", "Intermediate"),
+    ],
   },
   {
     id: "aptitude",
@@ -367,8 +495,15 @@ export const subjects = [
     fullName: "Quantitative and Logical Aptitude",
     description: "Placement-focused reasoning, arithmetic, data interpretation, and puzzles.",
     accent: "#4d7c0f",
-    stats: { topics: 0, estimatedHours: 0 },
-    topics: [],
+    topics: [
+      outlineTopic("percentages", "Percentages", 1, "Percentage calculations and common placement question patterns."),
+      outlineTopic("ratio-proportion", "Ratio and Proportion", 2, "Comparing quantities with ratios and proportional relationships."),
+      outlineTopic("profit-loss", "Profit and Loss", 3, "Cost price, selling price, profit, loss, and percentage change."),
+      outlineTopic("time-work", "Time and Work", 4, "Work rates and combined-work problems."),
+      outlineTopic("probability", "Probability", 5, "Basic probability rules and counting outcomes.", "Intermediate"),
+      outlineTopic("logical-reasoning", "Logical Reasoning", 6, "Common logical reasoning and pattern-based problems."),
+      outlineTopic("verbal-ability", "Verbal Ability", 7, "Reading, grammar, and vocabulary question areas."),
+    ],
   },
   {
     id: "interview-prep",
@@ -376,15 +511,40 @@ export const subjects = [
     fullName: "Interview Preparation",
     description: "HR questions, resume preparation, CS fundamentals revision, and mocks.",
     accent: "#7c3aed",
-    stats: { topics: 0, estimatedHours: 0 },
-    topics: [],
+    topics: [
+      outlineTopic("resume-project-discussion", "Resume and Project Discussion", 1, "Prepare to explain resume entries and project decisions."),
+      outlineTopic("self-introduction", "Self Introduction", 2, "Organize a concise introduction for an interview."),
+      outlineTopic("dsa-interview-patterns", "DSA Interview Patterns", 3, "Review common problem-solving patterns used in DSA interviews."),
+      outlineTopic("cs-fundamentals", "CS Fundamentals", 4, "Review core computer science subjects for interview discussion."),
+      outlineTopic("behavioral-questions", "Behavioral Questions", 5, "Structure examples for behavioral and experience-based questions."),
+      outlineTopic("mock-interview-preparation", "Mock Interview Preparation", 6, "Prepare a practice plan for simulated interviews."),
+    ],
   },
 ];
+
+applyStarterContent(subjects);
+
+function durationInHours(duration) {
+  const match = duration?.match(/^(\d+(?:\.\d+)?)\s*hours?$/i);
+  return match ? Number(match[1]) : null;
+}
+
+export function getSubjectMetadata(subject) {
+  const topics = Array.isArray(subject?.topics) ? subject.topics : [];
+  const durations = topics.map((topic) => durationInHours(topic.duration));
+  const hasCompleteEstimate = durations.length > 0 && durations.every((hours) => hours !== null);
+
+  return {
+    topicCount: topics.length,
+    estimatedHours: hasCompleteEstimate ? durations.reduce((total, hours) => total + hours, 0) : null,
+  };
+}
 
 export function getSubject(subjectId) {
   return subjects.find((subject) => subject.id === subjectId);
 }
 
 export function getTopic(subjectId, topicId) {
-  return getSubject(subjectId)?.topics.find((topic) => topic.id === topicId);
+  const topics = getSubject(subjectId)?.topics;
+  return Array.isArray(topics) ? topics.find((topic) => topic?.id === topicId) : undefined;
 }

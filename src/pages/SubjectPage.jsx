@@ -1,4 +1,5 @@
-import { Navigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import NotFoundState from "../components/layout/NotFoundState.jsx";
 import ProgressBar from "../components/dashboard/ProgressBar.jsx";
 import RoadmapList from "../components/roadmap/RoadmapList.jsx";
 import { getSubject } from "../data/subjects.js";
@@ -10,7 +11,10 @@ export default function SubjectPage() {
   const progressApi = useProgress();
 
   if (!subject) {
-    return <Navigate to="/" replace />;
+    return <NotFoundState
+      title="Subject not found"
+      message={`There is no subject with the ID “${subjectId}”. Choose a subject from the catalog to continue.`}
+    />;
   }
 
   const subjectProgress = progressApi.getSubjectProgress(subject);
@@ -30,7 +34,7 @@ export default function SubjectPage() {
         <div className="section-title">
           <div>
             <h2>Roadmap</h2>
-            <p>Topics update automatically as practice and completion progress is saved.</p>
+            <p>{subject.modules?.length ? `${subject.modules.length} guided stages · ` : ""}Open any topic to learn, revise, practice, and update your progress.</p>
           </div>
         </div>
         <RoadmapList subject={subject} progressApi={progressApi} />

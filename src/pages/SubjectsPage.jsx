@@ -14,7 +14,7 @@ export default function SubjectsPage() {
           <div>
             <span className="eyebrow">Your learning library</span>
             <h2>Subjects</h2>
-            <p>Choose a subject to open its roadmap. DSA is populated for this first learning slice.</p>
+            <p>Choose a subject to open its roadmap. Topic resources and practice are added where available.</p>
           </div>
         </div>
         <div className="subject-grid">
