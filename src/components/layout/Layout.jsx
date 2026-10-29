@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BookOpen, Bookmark, CircleHelp, GraduationCap, LayoutDashboard, LineChart, Map, Network, Target, Timer } from "lucide-react";
+import { BarChart3, BookOpen, Bookmark, CircleHelp, GraduationCap, LayoutDashboard, LineChart, Map, Network, Target, Timer, TrendingUp } from "lucide-react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { getProgressStorageNotice } from "../../state/progressStore.js";
 
@@ -15,6 +15,8 @@ const navGroups = [
     { label: "Progress", to: "/progress", icon: LineChart },
     { label: "Revision", to: "/revision", icon: Bookmark },
     { label: "Simulation", to: "/simulation", icon: Timer },
+    { label: "Readiness Coach", to: "/readiness", icon: TrendingUp },
+    { label: "Learning Analytics", to: "/analytics", icon: BarChart3 },
   ] },
 ];
 
@@ -69,8 +71,7 @@ export default function Layout() {
       <div className="main-area">
         <header className="topbar">
           <div className="topbar-title">
-            <span className="eyebrow">CODEPREP <span className="topbar-divider">/</span> PLACEMENT PREP</span>
-            <h1>Learn with a clear next step.</h1>
+            <h1>CodePrep</h1>
           </div>
           <div className="workspace-pill"><span className="workspace-indicator" />Student workspace</div>
         </header>

@@ -1,17 +1,11 @@
 import { CheckCircle2, ExternalLink } from "lucide-react";
+import { Link } from "react-router-dom";
 import SaveButton from "../SaveButton.jsx";
+import { getSafeCodingProblemUrl } from "../../data/codingPractice.js";
 
-function getSafeProblemUrl(value) {
-  try {
-    const url = new URL(value);
-    return url.protocol === "http:" || url.protocol === "https:" ? url.href : null;
-  } catch {
-    return null;
-  }
-}
-
-export default function CodingProblem({ problem, completed, onToggle, saved = false, onToggleSaved }) {
-  const url = getSafeProblemUrl(problem.url);
+export default function CodingProblem({ problem, subjectId, topicId, completed, onToggle, saved = false, onToggleSaved }) {
+  const url = getSafeCodingProblemUrl(problem.url);
+  const workspacePath = subjectId && topicId ? `/practice/${subjectId}/${topicId}/${problem.id}` : null;
 
   return (
     <article className="coding-problem-card">
@@ -33,6 +27,9 @@ export default function CodingProblem({ problem, completed, onToggle, saved = fa
       </div>
 
       <div className="problem-actions">
+        {workspacePath && <Link to={workspacePath} className="secondary-button coding-workspace-link" aria-label={`Open coding workspace for ${problem.title}`}>
+          Open Workspace
+        </Link>}
         {url ? (
           <a href={url} target="_blank" rel="noopener noreferrer" className="secondary-button" aria-label={`Open ${problem.title} on ${problem.platform || "external site"} in a new tab`}>
             <ExternalLink size={16} />

@@ -2,6 +2,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { subjects } from "../data/subjects.js";
 import { calculateRevisionSchedule, localDateKey, revisionItemKey } from "../data/revisionQueue.js";
 import { recordSimulationSubmission, SIMULATION_DURATIONS } from "../data/placementSimulation.js";
+import { appendActivityEvent, createActivityEvent, normalizeActivityEvent } from "../data/activityHistory.js";
+import { resolveMissionTask } from "../components/dashboard/dailyMission.js";
+import {
+  appendCodingAttempt as appendCodingAttemptRecord,
+  createCodingAttempt,
+  getCodingPracticeRecord,
+  saveCodingNotes as saveCodingNotesRecord,
+} from "../data/codingPractice.js";
 
 const STORAGE_KEY = "codeprep-progress-v1";
 const STATUS_LABELS = {
@@ -63,6 +71,38 @@ function writeProgress(progress) {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
 }
 
+function withActivityEvent(progress, event) {
+  if (!event) return progress;
+  const eventDate = new Date(event.timestamp);
+  const next = appendActivityEvent(progress, event, eventDate);
+  if (next === progress) return progress;
+  const history = progress.activityHistory;
+  const malformedHistory = history !== undefined && (!Array.isArray(history) || history.some((entry) => !normalizeActivityEvent(entry)));
+  if (malformedHistory) next.activityHistoryMalformedBackup = history;
+  return next;
+}
+
+function isMissionComplete(progress) {
+  const mission = progress?.dailyMission;
+  if (!mission || !Array.isArray(mission.tasks) || mission.tasks.length === 0) return false;
+  const completedTaskIds = Array.isArray(mission.completedTaskIds) ? mission.completedTaskIds : [];
+  return mission.tasks.every((task) => {
+    const resolved = resolveMissionTask(task, subjects);
+    if (!resolved.available) return false;
+    if (completedTaskIds.includes(task.id)) return true;
+    if (task.type !== "practice") return false;
+    if (task.targetType === "coding") return progress[`coding:${task.subjectId}:${task.topicId}:${task.targetId}`] === true;
+    if (task.targetType !== "mcq") return false;
+    const questions = [...new Map((Array.isArray(resolved.topic.practice?.questions) ? resolved.topic.practice.questions : [])
+      .filter((question) => typeof question?.id === "string" && question.id)
+      .map((question) => [question.id, question])).values()];
+    if (!questions.length) return false;
+    const attempt = progress[`mcq:${task.subjectId}:${task.topicId}`];
+    const answers = attempt?.answers && typeof attempt.answers === "object" && !Array.isArray(attempt.answers) ? attempt.answers : {};
+    return questions.every((question) => typeof answers[question.id]?.selectedAnswer === "string" && question.options?.includes(answers[question.id].selectedAnswer));
+  });
+}
+
 export function useProgress() {
   const [initial] = useState(readProgress);
   const [progress, setProgress] = useState(initial.progress);
@@ -90,10 +130,11 @@ export function useProgress() {
 
   function toggleTopic(subjectId, topicId) {
     const key = `${subjectId}:${topicId}`;
-    setProgress((current) => ({
-      ...current,
-      [key]: !current[key],
-    }));
+    const activity = createActivityEvent("topic_completed", { subjectId, topicId });
+    setProgress((current) => {
+      if (current[key] === true) return { ...current, [key]: false };
+      return withActivityEvent({ ...current, [key]: true }, activity);
+    });
   }
 
   function isTopicComplete(subjectId, topicId) {
@@ -110,14 +151,43 @@ export function useProgress() {
 
   function toggleCodingProblem(subjectId, topicId, problemId) {
     const key = codingProblemKey(subjectId, topicId, problemId);
-    setProgress((current) => ({
-      ...current,
-      [key]: !current[key],
-    }));
+    const activity = createActivityEvent("coding_problem_completed", { subjectId, topicId, problemId });
+    const missionActivity = progress.dailyMission?.date
+      ? createActivityEvent("daily_mission_completed", { date: progress.dailyMission.date })
+      : null;
+    setProgress((current) => {
+      if (current[key] === true) return { ...current, [key]: false };
+      let next = withActivityEvent({ ...current, [key]: true }, activity);
+      if (!isMissionComplete(current) && isMissionComplete(next) && missionActivity?.date === next.dailyMission?.date) {
+        next = withActivityEvent(next, missionActivity);
+      }
+      return next;
+    });
   }
 
   function isCodingProblemComplete(subjectId, topicId, problemId) {
     return progress[codingProblemKey(subjectId, topicId, problemId)] === true;
+  }
+
+  function getCodingPractice(subjectId, topicId, problemId) {
+    return getCodingPracticeRecord(progress, subjectId, topicId, problemId);
+  }
+
+  function saveCodingPracticeNotes(subjectId, topicId, problemId, notes) {
+    const updatedAt = new Date().toISOString();
+    setProgress((current) => saveCodingNotesRecord(current, subjectId, topicId, problemId, notes, updatedAt));
+  }
+
+  function recordCodingAttempt(subjectId, topicId, problemId, attemptInput) {
+    const attempt = createCodingAttempt(attemptInput);
+    if (!attempt) return;
+    const activity = createActivityEvent("coding_attempt_recorded", {
+      subjectId, topicId, problemId, outcome: attempt.outcome,
+    }, new Date(attempt.timestamp), `coding-attempt:${attempt.id}`);
+    setProgress((current) => {
+      const next = appendCodingAttemptRecord(current, subjectId, topicId, problemId, attempt);
+      return next === current ? current : withActivityEvent(next, activity);
+    });
   }
 
   function getMcqAttempt(subjectId, topicId) {
@@ -141,6 +211,13 @@ export function useProgress() {
 
   function answerMcqQuestion(subjectId, topicId, question, selectedAnswer, totalQuestions) {
     const key = mcqAttemptKey(subjectId, topicId);
+    const activity = typeof question?.id === "string" && Array.isArray(question.options) && question.options.includes(selectedAnswer) &&
+      typeof question.correctAnswer === "string" && question.options.includes(question.correctAnswer)
+      ? createActivityEvent("mcq_answered", { subjectId, topicId, questionId: question.id, correct: selectedAnswer === question.correctAnswer })
+      : null;
+    const missionActivity = progress.dailyMission?.date
+      ? createActivityEvent("daily_mission_completed", { date: progress.dailyMission.date })
+      : null;
     setProgress((current) => {
       const currentAttempt =
         current[key] && typeof current[key] === "object"
@@ -172,7 +249,7 @@ export function useProgress() {
       const score = Object.values(answers).filter((answer) => answer.correct).length;
       const completed = Object.keys(answers).length >= totalQuestions;
 
-      return {
+      const next = {
         ...current,
         [key]: {
           answers,
@@ -180,6 +257,11 @@ export function useProgress() {
           completed,
         },
       };
+      let updated = withActivityEvent(next, activity);
+      if (!isMissionComplete(current) && isMissionComplete(updated) && missionActivity?.date === updated.dailyMission?.date) {
+        updated = withActivityEvent(updated, missionActivity);
+      }
+      return updated;
     });
   }
 
@@ -333,12 +415,14 @@ export function useProgress() {
 
   function completeDailyMissionTask(date, taskId) {
     if (typeof date !== "string" || typeof taskId !== "string" || !taskId) return;
+    const activity = createActivityEvent("daily_mission_completed", { date });
     setProgress((current) => {
       const mission = current.dailyMission;
       if (!mission || mission.date !== date || !Array.isArray(mission.tasks) || !mission.tasks.some((task) => task.id === taskId)) return current;
       const completedTaskIds = Array.isArray(mission.completedTaskIds) ? mission.completedTaskIds : [];
       if (completedTaskIds.includes(taskId)) return current;
-      return { ...current, dailyMission: { ...mission, completedTaskIds: [...completedTaskIds, taskId] } };
+      const next = { ...current, dailyMission: { ...mission, completedTaskIds: [...completedTaskIds, taskId] } };
+      return !isMissionComplete(current) && isMissionComplete(next) ? withActivityEvent(next, activity) : next;
     });
   }
 
@@ -374,19 +458,20 @@ export function useProgress() {
         ![item.subjectId, item.topicId, item.itemId].every((value) => typeof value === "string" && value) ||
         !["again", "hard", "gotIt", "easy"].includes(outcome)) return;
     const key = revisionItemKey(item);
+    const activity = createActivityEvent("revision_reviewed", { subjectId: item.subjectId, topicId: item.topicId, itemType: item.type });
     setProgress((current) => {
       const schedules = current.revisionSchedules && typeof current.revisionSchedules === "object" && !Array.isArray(current.revisionSchedules)
         ? current.revisionSchedules
         : {};
       const next = calculateRevisionSchedule(schedules[key], outcome, localDateKey());
       if (!next) return current;
-      return {
+      return withActivityEvent({
         ...current,
         ...(current.revisionSchedules !== undefined && schedules !== current.revisionSchedules
           ? { revisionSchedulesMalformedBackup: current.revisionSchedules }
           : {}),
         revisionSchedules: { ...schedules, [key]: next },
-      };
+      }, activity);
     });
   }
 
@@ -439,7 +524,23 @@ export function useProgress() {
 
   function submitPlacementSimulation(result) {
     if (!result || typeof result.id !== "string" || !result.result) return;
-    updatePlacementSimulation((existing) => recordSimulationSubmission(existing, result));
+    const activity = createActivityEvent("simulation_submitted", { focusId: result.config?.focusId }, new Date(), `simulation:${result.id}`);
+    setProgress((current) => {
+      const existing = current.placementSimulation && typeof current.placementSimulation === "object" && !Array.isArray(current.placementSimulation)
+        ? current.placementSimulation
+        : {};
+      const updated = recordSimulationSubmission(existing, result);
+      if (updated === existing) return current;
+      let next = {
+        ...current,
+        ...(current.placementSimulation !== undefined && existing !== current.placementSimulation
+          ? { placementSimulationMalformedBackup: current.placementSimulation }
+          : {}),
+        placementSimulation: updated,
+      };
+      next = withActivityEvent(next, activity);
+      return next;
+    });
   }
 
   function discardActivePlacementSimulation(expectedId) {
@@ -515,6 +616,9 @@ export function useProgress() {
     isTopicComplete,
     toggleCodingProblem,
     isCodingProblemComplete,
+    getCodingPractice,
+    saveCodingPracticeNotes,
+    recordCodingAttempt,
     getMcqAttempt,
     answerMcqQuestion,
     resetMcqAttempt,
