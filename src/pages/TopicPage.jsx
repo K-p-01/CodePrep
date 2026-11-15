@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { ArrowLeft, ArrowRight, ChevronRight } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import NotFoundState from "../components/layout/NotFoundState.jsx";
@@ -13,6 +14,12 @@ export default function TopicPage() {
   const topic = getTopic(subjectId, topicId);
   const progressApi = useProgress();
   const { isTopicComplete, toggleTopic } = progressApi;
+
+  useEffect(() => {
+    if (window.location.hash === "#algorithm-lab") {
+      requestAnimationFrame(() => document.getElementById("algorithm-lab")?.scrollIntoView({ block: "start" }));
+    }
+  }, [subjectId, topicId]);
 
   if (!subject || !topic) {
     return (
@@ -75,6 +82,7 @@ export default function TopicPage() {
       <nav className="topic-section-nav" aria-label="Topic learning sections">
         <a href="#overview">Overview</a>
         <a href="#learn">Learn</a>
+        {subject.id === "dsa" && ["dynamic-programming", "graphs", "recursion"].includes(topic.id) && <a href="#algorithm-lab">Algorithm visualizer</a>}
         <a href="#notes">Notes</a>
         <a href="#practice">Practice</a>
       </nav>

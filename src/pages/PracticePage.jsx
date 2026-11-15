@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import PracticePanel from "../components/practice/PracticePanel.jsx";
 import PracticeFilters from "../components/practice/PracticeFilters.jsx";
 import { DEFAULT_PRACTICE_FILTERS, filterPracticeItems, getPracticeFilterOptions } from "../components/practice/practiceUtils.js";
@@ -8,7 +8,12 @@ import { useProgress } from "../state/progressStore.js";
 
 export default function PracticePage() {
   const progressApi = useProgress();
+  const [searchParams] = useSearchParams();
   const [filters, setFilters] = useState(DEFAULT_PRACTICE_FILTERS);
+  useEffect(() => {
+    const type = searchParams.get("type");
+    if (type === "mcq" || type === "coding") setFilters((current) => ({ ...current, type }));
+  }, [searchParams]);
   const availableTopics = useMemo(() => subjects.flatMap((subject) =>
     (Array.isArray(subject.topics) ? subject.topics : [])
       .filter((topic) => (topic.practice?.problems?.length ?? 0) + (topic.practice?.questions?.length ?? 0) > 0)

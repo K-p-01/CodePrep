@@ -74,7 +74,7 @@ export default function DailyMission({ catalog, progressApi, recommendation }) {
   }
 
   return (
-    <section className="daily-mission" aria-labelledby="daily-mission-heading">
+    <section id="daily-mission" className="daily-mission" aria-labelledby="daily-mission-heading">
       <div className="daily-mission-heading">
         <div className="daily-mission-title">
           <span className="eyebrow">A focused study session</span>

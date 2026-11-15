@@ -2,6 +2,7 @@ import { BookOpen, CheckCircle2, FileText, Target } from "lucide-react";
 import NotesPanel from "./NotesPanel.jsx";
 import PracticePanel from "../practice/PracticePanel.jsx";
 import ResourceList from "./ResourceList.jsx";
+import AlgorithmVisualizer from "../visualizers/AlgorithmVisualizer.jsx";
 
 export default function TopicContent({ subject, topic, complete, onToggleComplete, progressApi }) {
   const resources = topic.resources ?? [];
@@ -19,6 +20,10 @@ export default function TopicContent({ subject, topic, complete, onToggleComplet
         </div>
         <ResourceList resources={resources} subject={subject} topic={topic} progressApi={progressApi} />
       </section>
+
+      {["dynamic-programming", "graphs", "recursion"].includes(topic.id) && subject.id === "dsa" && (
+        <AlgorithmVisualizer topicId={topic.id} />
+      )}
 
       <section id="notes" className="content-section topic-learning-section">
         <div className="section-title">

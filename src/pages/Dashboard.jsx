@@ -1,126 +1,87 @@
-import { ArrowRight, BookOpen, CheckCircle2, CircleHelp, Code2, Compass, Layers3, Sparkles } from "lucide-react";
+import { ArrowRight, BookOpen, BookmarkCheck, Braces, CheckCircle2, Code2, Compass, Cpu, Database, MessageSquareCode, Network, Sigma, Target, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
-import ProgressBar from "../components/dashboard/ProgressBar.jsx";
 import DailyMission from "../components/dashboard/DailyMission.jsx";
 import { getPlacementPillars } from "../components/dashboard/placementMetrics.js";
+import { buildReadinessReport } from "../data/readinessCoach.js";
 import { buildRevisionQueue } from "../data/revisionQueue.js";
 import { subjects } from "../data/subjects.js";
 import { useProgress } from "../state/progressStore.js";
 
-const pillarIcons = { dsa: Code2, "core-cs": Layers3, aptitude: CircleHelp, "interview-prep": BookOpen };
+const pillarIcons = { dsa: Code2, "core-cs": Database, aptitude: Sigma, "interview-prep": MessageSquareCode };
+const subjectIcons = { dsa: Code2, dbms: Database, os: Cpu, cn: Network, oop: Braces, aptitude: Sigma, "interview-prep": MessageSquareCode };
 
-function PillarCard({ pillar }) {
-  const Icon = pillarIcons[pillar.id];
-  const percent = pillar.totalTopics ? Math.round((pillar.completedTopics / pillar.totalTopics) * 100) : 0;
+function MetricCard({ icon: Icon, label, value, detail, tone, to }) {
+  return <Link className="dashboard-metric" to={to}>
+    <span className={`dashboard-metric-icon ${tone}`}><Icon size={17}/></span>
+    <span className="dashboard-metric-copy"><small>{label}</small><strong>{value}</strong><span>{detail}</span></span>
+  </Link>;
+}
 
-  return (
-    <article className={`placement-pillar placement-pillar-${pillar.tone}`}>
-      <div className="placement-pillar-top">
-        <span className="placement-pillar-icon"><Icon size={18} /></span>
-        <span className="placement-pillar-count">{pillar.availableSubjects.length || "—"} {pillar.availableSubjects.length === 1 ? "subject" : "subjects"}</span>
-      </div>
-      <h3>{pillar.title}</h3>
-      {pillar.totalTopics ? (
-        <>
-          <div className="placement-topic-count"><strong>{pillar.completedTopics}</strong><span> / {pillar.totalTopics} topics complete</span></div>
-          <ProgressBar value={percent} label={`${pillar.title} topic coverage`} />
-        </>
-      ) : <p className="placement-missing">No topics available in the current catalog.</p>}
+function LearningPathCard({ pillar, index }) {
+  const Icon = pillarIcons[pillar.id] ?? BookOpen;
+  const percent = pillar.totalTopics ? Math.round(pillar.completedTopics / pillar.totalTopics * 100) : 0;
+  const to = pillar.href ?? `/subjects/${pillar.availableSubjects[0]?.id ?? "dsa"}`;
+  return <Link className={`learning-path-card tone-${index}`} to={to}>
+    <span className="learning-path-number">0{index + 1}</span>
+    <span className="learning-path-icon"><Icon size={19}/></span>
+    <strong>{pillar.title}</strong>
+    <small>{pillar.completedTopics} / {pillar.totalTopics} topics · {percent}%</small>
+    <span className="learning-path-track"><i style={{ width: `${percent}%` }}/></span>
+    <ArrowRight size={16} className="learning-path-arrow"/>
+  </Link>;
+}
 
-      <div className="placement-detail-list">
-        {pillar.totalCodingProblems > 0 && <div><span>Coding problems</span><strong>{pillar.completedCodingProblems} / {pillar.totalCodingProblems}</strong></div>}
-        {pillar.totalQuestions > 0 && (
-          <div><span>MCQs answered</span><strong>{pillar.answeredQuestions} / {pillar.totalQuestions}</strong></div>
-        )}
-        {pillar.totalQuestions > 0 && (
-          <div><span>MCQ accuracy</span><strong>{pillar.accuracy === null ? "No answers yet" : `${pillar.accuracy}%`}</strong></div>
-        )}
-        {!pillar.totalCodingProblems && !pillar.totalQuestions && <div><span>Practice</span><strong>No practice items in catalog</strong></div>}
-      </div>
-
-      <div className="placement-pillar-links">
-        {pillar.availableSubjects.map((subject) => (
-          <Link key={subject.id} to={`/subjects/${subject.id}`} aria-label={`Open ${subject.name} roadmap`}>
-            {subject.name}<ArrowRight size={13} />
-          </Link>
-        ))}
-      </div>
-    </article>
-  );
+function CourseRow({ subject, progress }) {
+  const Icon = subjectIcons[subject.id] ?? BookOpen;
+  return <Link className="dashboard-course-row" to={`/subjects/${subject.id}`}>
+    <span className="dashboard-course-icon"><Icon size={17}/></span>
+    <span className="dashboard-course-copy"><strong>{subject.fullName}</strong><small>{subject.description}</small></span>
+    <span className="dashboard-course-progress"><span className="dashboard-course-track"><i style={{ width: `${progress.percent}%` }}/></span><small>{progress.completedTopics}/{progress.totalTopics}</small></span>
+    <ArrowRight size={16} className="dashboard-course-arrow"/>
+  </Link>;
 }
 
 export default function Dashboard() {
   const progressApi = useProgress();
+  const readiness = buildReadinessReport(subjects, progressApi);
   const pillars = getPlacementPillars(subjects, progressApi);
   const next = progressApi.getContinueLearning();
-  const nextIsInProgress = next && !next.complete && progressApi.getTopicStatus(next.subject, next.topic).id === "inProgress";
-  const hasValidRecommendation = next && !next.complete && next.subject?.id && next.topic?.id;
-  const revisionQueue = buildRevisionQueue(subjects, progressApi);
-  const dueReviews = revisionQueue.filter((entry) => entry.available && (entry.dueStatus === "dueToday" || entry.dueStatus === "overdue"));
+  const validNext = next && !next.complete && next.subject?.id && next.topic?.id;
+  const totalTopics = subjects.reduce((sum, subject) => sum + subject.topics.length, 0);
+  const completedTopics = subjects.reduce((sum, subject) => sum + subject.topics.filter((topic) => progressApi.isTopicComplete(subject.id, topic.id)).length, 0);
+  const codingProblems = subjects.flatMap((subject) => subject.topics.flatMap((topic) => (topic.practice?.problems ?? []).map((problem) => ({ subject, topic, problem }))));
+  const completedProblems = codingProblems.filter(({ subject, topic, problem }) => progressApi.isCodingProblemComplete(subject.id, topic.id, problem.id)).length;
+  const revisionItems = buildRevisionQueue(subjects, progressApi).filter((item) => item.available);
+  const dueReviews = revisionItems.filter((item) => item.schedule && (item.dueStatus === "dueToday" || item.dueStatus === "overdue"));
+  const overdueReviews = dueReviews.filter((item) => item.dueStatus === "overdue").length;
 
-  return (
-    <div className="stack dashboard-page placement-dashboard">
-      <header className="dashboard-heading">
-        <div className="dashboard-greeting-mark"><Sparkles size={17} /></div>
-        <div>
-          <span className="eyebrow">Placement command center</span>
-          <h2>Make your next step count.</h2>
-          <p>A clear view of your preparation across problem solving, core CS, aptitude, and interviews.</p>
-        </div>
-      </header>
+  return <div className="dashboard-layout">
+    <section className="placement-hero" aria-label="Placement preparation overview">
+      <div className="placement-hero-copy"><span className="eyebrow">Your placement preparation</span><h2>{validNext ? "One clear next step." : "Keep your preparation moving."}</h2><p>{validNext ? `${next.topic.title} · ${next.subject.name}. Follow your roadmap, practice, and track progress in one place.` : "Review your roadmap and choose a focused next step."}</p><Link className="placement-hero-button" to={validNext ? `/subjects/${next.subject.id}/topics/${next.topic.id}` : "/subjects"}>{validNext ? "Continue learning" : "Browse roadmaps"}<ArrowRight size={16}/></Link></div>
+      <div className="placement-hero-paths">{pillars.slice(0, 3).map((pillar, index) => <LearningPathCard key={pillar.id} pillar={pillar} index={index}/>)}</div>
+    </section>
 
-      {hasValidRecommendation ? (
-        <section className="placement-recommendation">
-          <div className="placement-recommendation-icon">{nextIsInProgress ? <BookOpen size={20} /> : <Compass size={20} />}</div>
-          <div className="placement-recommendation-copy">
-            <span className="eyebrow">{nextIsInProgress ? "Pick up where you left off" : "Next in your preparation path"}</span>
-            <h3>{next.topic.title}</h3>
-            <p>{nextIsInProgress ? "You have already started this topic. Continue where you left off." : "This is the first incomplete topic in the catalog's preparation order."}</p>
-            <div className="placement-recommendation-context"><span>{next.subject.name}</span><span>{next.topic.level ?? "Roadmap topic"}</span></div>
-          </div>
-          <Link className="primary-button" to={`/subjects/${next.subject.id}/topics/${next.topic.id}`}>
-            {nextIsInProgress ? "Continue topic" : "Start recommended topic"}<ArrowRight size={16} />
-          </Link>
-        </section>
-      ) : next?.complete ? (
-        <section className="placement-recommendation placement-recommendation-complete">
-          <div className="placement-recommendation-icon"><CheckCircle2 size={20} /></div>
-          <div className="placement-recommendation-copy">
-            <span className="eyebrow">Roadmaps complete</span><h3>Every topic in the catalog is complete.</h3>
-            <p>Review your overall progress or revisit saved study materials.</p>
-          </div>
-          <div className="placement-recommendation-actions">
-            <Link className="secondary-button" to="/progress">View progress</Link>
-            <Link className="primary-button" to="/revision">Open revision<ArrowRight size={16} /></Link>
-          </div>
-        </section>
-      ) : (
-        <section className="placement-recommendation">
-          <div className="placement-recommendation-icon"><Compass size={20} /></div>
-          <div className="placement-recommendation-copy"><span className="eyebrow">No recommendation available</span><h3>Explore your preparation paths.</h3><p>The catalog currently has no topics to recommend.</p></div>
-          <Link className="primary-button" to="/subjects">Browse subjects<ArrowRight size={16} /></Link>
-        </section>
-      )}
+    <section className="dashboard-metrics" aria-label="Learning overview">
+      <MetricCard icon={CheckCircle2} label="Topics completed" value={`${completedTopics} / ${totalTopics}`} detail={`${totalTopics - completedTopics} remaining`} tone="violet" to="/progress"/>
+      <MetricCard icon={Code2} label="Coding problems" value={`${completedProblems} / ${codingProblems.length}`} detail="Marked complete" tone="blue" to="/practice?type=coding"/>
+      <MetricCard icon={Target} label="MCQ accuracy" value={readiness.practice.accuracy === null ? "—" : `${readiness.practice.accuracy}%`} detail={readiness.practice.answeredMcqs ? `${readiness.practice.correctMcqs} of ${readiness.practice.answeredMcqs} correct` : "No answers recorded yet"} tone="green" to="/practice?type=mcq"/>
+      <MetricCard icon={BookmarkCheck} label="Pending revisions" value={dueReviews.length} detail={overdueReviews ? `${overdueReviews} overdue` : dueReviews.length ? "Due today" : "Nothing due today"} tone="amber" to="/revision"/>
+    </section>
 
-      <DailyMission catalog={subjects} progressApi={progressApi} recommendation={next} />
-
-      <Link className="dashboard-revision-reminder" to="/revision"><span><strong>{dueReviews.length ? `${dueReviews.length} review ${dueReviews.length === 1 ? "item" : "items"} due` : "Revision queue"}</strong><small>{dueReviews.length ? "Due today or overdue · review your saved and in-progress material" : "No reviews due today · check upcoming items"}</small></span><span className="dashboard-revision-cta">Open queue<ArrowRight size={15} /></span></Link>
-
-      <section className="placement-pillars-section" aria-labelledby="placement-pillars-heading">
-        <div className="section-title">
-          <div><span className="eyebrow">Your preparation</span><h2 id="placement-pillars-heading">Four pillars, one plan</h2><p>Coverage uses unique catalog topics; practice figures use the items and answers saved in this browser.</p></div>
-          <Link className="back-link" to="/progress">Detailed progress<ArrowRight size={15} /></Link>
-        </div>
-        <div className="placement-pillar-grid">
-          {pillars.map((pillar) => <PillarCard key={pillar.id} pillar={pillar} />)}
-        </div>
+    <div className="dashboard-columns">
+      <section className="dashboard-panel dashboard-learning-list" aria-labelledby="my-learning-title">
+        <div className="dashboard-section-heading"><div><span className="eyebrow">Your course library</span><h3 id="my-learning-title">My learning</h3></div><Link to="/subjects">Browse all<ArrowRight size={14}/></Link></div>
+        <div className="dashboard-course-list">{subjects.map((subject) => <CourseRow key={subject.id} subject={subject} progress={progressApi.getSubjectProgress(subject)}/>)}</div>
       </section>
 
-      <nav className="placement-quick-links" aria-label="Preparation shortcuts">
-        <Link to="/subjects"><Compass size={17} /><span><strong>Browse all subjects</strong><small>Open the complete subject catalog</small></span><ArrowRight size={15} /></Link>
-        <Link to="/patterns"><Layers3 size={17} /><span><strong>Explore DSA patterns</strong><small>Learn techniques and find linked practice</small></span><ArrowRight size={15} /></Link>
-        <Link to="/practice"><BookOpen size={17} /><span><strong>Practice</strong><small>Find coding problems and MCQs</small></span><ArrowRight size={15} /></Link>
-      </nav>
+      <aside className="dashboard-column dashboard-column-focus" aria-label="Today's study focus">
+        <DailyMission catalog={subjects} progressApi={progressApi} recommendation={next}/>
+        <Link className="dashboard-revision-card" to="/revision"><span className="dashboard-revision-icon"><BookmarkCheck size={18}/></span><span className="dashboard-revision-copy"><strong>Smart revision</strong><small>{dueReviews.length ? `${dueReviews.length} items due${overdueReviews ? ` · ${overdueReviews} overdue` : " today"}` : revisionItems.length ? `${revisionItems.length} saved or in-progress items in your queue` : "Your review queue is clear"}</small></span><ArrowRight size={16}/></Link>
+        <section className="dashboard-panel dashboard-actions" aria-labelledby="recommended-actions-title"><div className="dashboard-section-heading"><div><span className="eyebrow">Keep moving forward</span><h3 id="recommended-actions-title">Recommended next actions</h3></div></div>
+          {readiness.recommendations.length ? <div className="dashboard-action-list">{readiness.recommendations.slice(0, 3).map((action) => <Link key={action.id} to={action.href}><span><strong>{action.title}</strong><small>{action.reason}</small></span><ArrowRight size={15}/></Link>)}</div> : <p className="dashboard-empty-copy">Complete a topic or try a practice set to get your next suggestions.</p>}
+        </section>
+        <div className="dashboard-focus-links"><Link to="/patterns"><Compass size={16}/>Explore DSA patterns<ArrowRight size={14}/></Link><Link to="/simulation"><TrendingUp size={16}/>Take a placement simulation<ArrowRight size={14}/></Link></div>
+      </aside>
     </div>
-  );
+  </div>;
 }

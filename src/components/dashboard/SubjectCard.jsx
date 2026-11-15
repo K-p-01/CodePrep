@@ -31,10 +31,7 @@ export default function SubjectCard({ subject, progress }) {
         <span><strong>{progress?.completedTopics ?? 0}</strong> of {topicCount} topics complete</span>
         {estimatedHours !== null && <span>{estimatedHours}h estimated</span>}
       </div>
-      <div className="subject-card-action">
-        <span>Open roadmap</span>
-        <ArrowRight size={16} />
-      </div>
+      <div className="subject-card-action"><span>Explore subject</span><ArrowRight size={16} /></div>
     </Link>
   );
 }
